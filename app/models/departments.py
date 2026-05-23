@@ -1,6 +1,6 @@
 from datetime import datetime
 from app.database import Base
-from sqlalchemy import ForeignKey, func, String, DateTime
+from sqlalchemy import ForeignKey, func, String, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -12,6 +12,7 @@ class Department(Base):
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
                                                  nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # Связь один-ко-многим, возвращает список объектов Employee
     employees: Mapped[list["Employee"]] = relationship(
         "Employee",  # Имя связанной модели

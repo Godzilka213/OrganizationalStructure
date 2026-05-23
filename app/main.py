@@ -1,14 +1,13 @@
 from fastapi import FastAPI
-from app.routers import departaments, employees
+from app.routers import departaments
 
 app = FastAPI(
     title="FastAPI Organizational Structure",
     version="0.1.0",
 )
 
-# Подключаем маршруты департамента и сотрудника
+# Подключаем маршруты департамента
 app.include_router(departaments.router)
-app.include_router(employees.router)
 
 
 # Корневой эндпоинт для проверки
