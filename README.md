@@ -55,4 +55,8 @@ http://localhost:8000/redoc
 
 Создать .env файл:
 
-DATABASE_URL="postgresql+asyncpg://postgres:admin@localhost:5432/OrganizationalStructure"
+- DB_HOST=db
+- DB_PORT=5432
+- DB_NAME=org_structure
+- DB_USER=app_user
+- DB_PASSWORD=secret_password
