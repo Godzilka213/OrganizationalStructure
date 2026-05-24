@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import contains_eager
 
 from app.db_depends import get_async_db
 from app.models import Department as DepartmentModel, Employee as EmployeeModel
@@ -15,6 +15,7 @@ router = APIRouter(
 )
 
 
+# Вспомогательная функция для удаления департамента и переноса сотрудников
 async def delete_department_reassign(
         db: AsyncSession,
         department_id: int,
@@ -57,23 +58,35 @@ async def delete_department_reassign(
 
 
 @router.get("/")
-async def get_departments(db: AsyncSession = Depends(get_async_db)):
+async def get_departments(
+        depth: int = Query(1, ge=1, le=5),
+        include_employees: bool = Query(True),
+        db: AsyncSession = Depends(get_async_db)
+):
     """
     Возвращает список всех активных департаментов
     """
+    if not include_employees:
+        stmt = (
+            select(DepartmentModel)
+            .where(DepartmentModel.is_active == True)
+        )
+        departments = (await db.scalars(stmt)).all()
+        return departments[:depth]
+
     stmt = (
         select(DepartmentModel)
+        .join(DepartmentModel.employees)
         .where(DepartmentModel.is_active == True)
-        .options(selectinload(DepartmentModel.employees).
-                 load_only(EmployeeModel.id,
-                           EmployeeModel.full_name,
-                           EmployeeModel.position,
-                           EmployeeModel.department_id,
-                           EmployeeModel.hired_at)
-                 )
+        .options(contains_eager(DepartmentModel.employees))
+        .order_by(DepartmentModel.id, EmployeeModel.created_at, EmployeeModel.full_name)
     )
-    departments = await db.scalars(stmt)
-    return departments.all()
+
+    result = await db.scalars(stmt)
+
+    departments = result.unique().all()[:depth]
+
+    return departments
 
 
 @router.post("/", response_model=DepartmentSchema, status_code=status.HTTP_201_CREATED)

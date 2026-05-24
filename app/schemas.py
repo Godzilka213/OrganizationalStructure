@@ -33,8 +33,6 @@ class Department(BaseModel):
     parent_id: int | None = Field(None, description="ID родительского департамента, если есть")
     created_at: datetime = Field(..., description="Дата создания департамента")
     is_active: bool = Field(..., description="Активность департамента")  # используется для мягкого удаления
-    # employees: list['Employee'] | None = Field(list('Employee'), description="Сотрудники")
-    # children: list['Department'] | None = Field(list('Department'), description="Дочерние департаменты")
 
     model_config = ConfigDict(from_attributes=True)
 
